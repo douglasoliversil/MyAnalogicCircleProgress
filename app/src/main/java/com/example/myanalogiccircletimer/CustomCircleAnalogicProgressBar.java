@@ -55,7 +55,7 @@ public class CustomCircleAnalogicProgressBar extends ConstraintLayout {
     }
 
     private void init(Context context, AttributeSet attrs) {
-        inflate(context, R.layout.custom_circular_analogic_progress_bar, this);
+        inflate(context, R.layout.custom_circle_analogic_progress_bar, this);
         setWillNotDraw(false);
         mPointer = findViewById(R.id.pointer);
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
