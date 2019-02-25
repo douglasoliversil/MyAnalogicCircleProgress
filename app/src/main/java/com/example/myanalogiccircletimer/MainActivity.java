@@ -1,14 +1,17 @@
 package com.example.myanalogiccircletimer;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
-    private CustomCircleAnalogicProgressBar mProgressBar;
+    private CustomCircularProgressBar mProgressBar;
     private Integer countProgress = 0;
     private TimerTask mTimerTask;
     private Timer mTimer;
@@ -39,7 +42,20 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         mTimer.scheduleAtFixedRate(mTimerTask, 0, 1000);*/
-       mProgressBar.startAnimation(60000);
+
+//       mProgressBar.startAnimation(60000);
+        findViewById(R.id.doProgress).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mProgressBar.setProgressTo(countProgress += 10, new CustomCircularProgressBar.Callback() {
+                    @Override
+                    public void countFinished() {
+                        Toast.makeText(getApplicationContext(),"tempo acabou",Toast.LENGTH_SHORT).show();
+                    }
+                });
+                mProgressBar.getCounterText().setText(countProgress.toString() + "%");
+            }
+        });
     }
 
     /*private void stopTask() {
