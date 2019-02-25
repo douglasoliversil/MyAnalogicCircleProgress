@@ -5,6 +5,9 @@
         <attr name="timeRemainingColor" format="color" />
         <attr name="strokeWidth" format="dimension" />
         <attr name="pad" format="float" />
-        <attr name="isDigitalMode" format="boolean" />
+        <attr name="mode" format="enum" >
+            <enum name="analogic" value="0"/>
+            <enum name="digital" value="1"/>
+        </attr>
     </declare-styleable>
 </resources>

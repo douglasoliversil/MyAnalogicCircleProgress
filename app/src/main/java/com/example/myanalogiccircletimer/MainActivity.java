@@ -47,13 +47,13 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.doProgress).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mProgressBar.setProgressTo(countProgress += 10, new CustomCircularProgressBar.Callback() {
+                mProgressBar.setProgressTo(3000, new CustomCircularProgressBar.Callback() {
                     @Override
                     public void countFinished() {
                         Toast.makeText(getApplicationContext(),"tempo acabou",Toast.LENGTH_SHORT).show();
                     }
                 });
-                mProgressBar.getCounterText().setText(countProgress.toString() + "%");
+//                mProgressBar.getCounterText().setText(countProgress.toString() + "%");
             }
         });
     }

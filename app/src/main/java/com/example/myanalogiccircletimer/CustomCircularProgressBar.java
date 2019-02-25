@@ -8,7 +8,6 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.support.constraint.ConstraintLayout;
 import android.util.AttributeSet;
-import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,8 +25,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     private int mProgressColor;
     private int mRemainingColor;
     private ImageView mPointer;
-    private int mAnimationDuration = 400;
-    private boolean isDigitalMode;
+    private int layoutMode;
     private TextView mCounterText;
 
     public CustomCircularProgressBar(Context context) {
@@ -53,7 +51,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 0, 0);
 
         try {
-            isDigitalMode = a.getBoolean(R.styleable.CustomCircularProgressBar_isDigitalMode, false);
+            layoutMode = a.getInt(R.styleable.CustomCircularProgressBar_mode, 1);
             mProgressColor = a.getColor(R.styleable.CustomCircularProgressBar_timeProgressColor, getResources().getColor(R.color.colorAccent));
             mRemainingColor = a.getColor(R.styleable.CustomCircularProgressBar_timeRemainingColor, getResources().getColor(R.color.colorPrimaryDark));
             mStrokeWidth = a.getDimension(R.styleable.CustomCircularProgressBar_strokeWidth, 22);
@@ -63,50 +61,38 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             a.recycle();
         }
 
-        if (isDigitalMode) {
+        setupLayout(context);
+
+    }
+
+    private void setupLayout(Context context) {
+        if (this.layoutMode == LayoutMode.DIGITAL.modeNumber) {
             inflate(context, R.layout.custom_circle_digital_progress_bar, this);
             mCounterText = findViewById(R.id.counterText);
         } else {
             inflate(context, R.layout.custom_circle_analogic_progress_bar, this);
             mPointer = findViewById(R.id.pointer);
         }
-
     }
 
     public void setProgressTo(final int progressToCount, final Callback callback) {
 
-        ValueAnimator animator;
-
-        if (isDigitalMode) {
-            animator = ValueAnimator.ofFloat(mSweepAngle, calcSweepAngleFromProgress(progressToCount));
-            animator.setInterpolator(new DecelerateInterpolator());
-            animator.setDuration(mAnimationDuration);
-            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    mSweepAngle = (progressToCount == 100 ? 0 : (float) animation.getAnimatedValue());
-                    invalidate();
-                    if (progressToCount >= 100) {
-                        callback.countFinished();
-                    }
-                }
-            });
-        } else {
-            animator = ValueAnimator.ofFloat(mSweepAngle, mMaxSweepAngle);
-            animator.setInterpolator(new LinearInterpolator());
-            animator.setDuration(progressToCount);
-            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    mSweepAngle = (float) animation.getAnimatedValue();
+        ValueAnimator animator = ValueAnimator.ofFloat(mSweepAngle, mMaxSweepAngle);
+        animator.setInterpolator(new LinearInterpolator());
+        animator.setDuration(progressToCount);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mSweepAngle = (float) animation.getAnimatedValue();
+                if (layoutMode == LayoutMode.ANALOGIC.modeNumber) {
                     mPointer.setRotation(mSweepAngle);
-                    invalidate();
-                    if (animation.getAnimatedFraction() == 1.0) {
-                        callback.countFinished();
-                    }
                 }
-            });
-        }
+                invalidate();
+                if (animation.getAnimatedFraction() == 1.0) {
+                    callback.countFinished();
+                }
+            }
+        });
         animator.start();
     }
 
@@ -135,7 +121,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         mPaint.setAntiAlias(true);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
 
-        if (isDigitalMode) {
+        if (layoutMode == LayoutMode.DIGITAL.modeNumber) {
             mPaint.setColor(mProgressColor);
             mPaint.setStyle(Paint.Style.STROKE);
 
@@ -153,11 +139,17 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         }
     }
 
-    private float calcSweepAngleFromProgress(int progress) {
-        return (mMaxSweepAngle / 100) * progress;
-    }
-
     public interface Callback {
         void countFinished();
+    }
+
+    public enum LayoutMode {
+        ANALOGIC(0), DIGITAL(1);
+
+        int modeNumber;
+
+        LayoutMode(int modeNumber) {
+            this.modeNumber = modeNumber;
+        }
     }
 }
