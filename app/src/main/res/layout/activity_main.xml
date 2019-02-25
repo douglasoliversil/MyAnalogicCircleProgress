@@ -6,19 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <!--<com.example.myanalogiccircletimer.CustomCircleAnalogicProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="280dp"
-        android:layout_height="280dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:pad="0.6"
-        app:strokeWidth="16dp"
-        app:timeProgressColor="#FFFFFF"
-        app:timeRemainingColor="@color/colorPrimary" />-->
-
     <com.example.myanalogiccircletimer.CustomCircularProgressBar
         android:id="@+id/progressBar"
         android:layout_width="280dp"

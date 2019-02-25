@@ -86,7 +86,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 public void onAnimationUpdate(ValueAnimator animation) {
                     mSweepAngle = (progressToCount == 100 ? 0 : (float) animation.getAnimatedValue());
                     invalidate();
-                    if(progressToCount >= 100){
+                    if (progressToCount >= 100) {
                         callback.countFinished();
                     }
                 }
@@ -101,7 +101,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                     mSweepAngle = (float) animation.getAnimatedValue();
                     mPointer.setRotation(mSweepAngle);
                     invalidate();
-                    if(animation.getAnimatedFraction() == 1.0){
+                    if (animation.getAnimatedFraction() == 1.0) {
                         callback.countFinished();
                     }
                 }
@@ -110,7 +110,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         animator.start();
     }
 
-    public TextView getCounterText(){
+    public TextView getCounterText() {
         return mCounterText;
     }
 
@@ -157,7 +157,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         return (mMaxSweepAngle / 100) * progress;
     }
 
-    public interface Callback{
+    public interface Callback {
         void countFinished();
     }
 }
