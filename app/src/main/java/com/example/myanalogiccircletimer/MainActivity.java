@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.doProgress).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mProgressBar.setProgressTo(7200000, new CustomCircularProgressBar.Callback() {
+                mProgressBar.setProgressTo(30000, new CustomCircularProgressBar.Callback() {
                     @Override
                     public void countFinished() {
                         Toast.makeText(getApplicationContext(), "tempo acabou", Toast.LENGTH_SHORT).show();

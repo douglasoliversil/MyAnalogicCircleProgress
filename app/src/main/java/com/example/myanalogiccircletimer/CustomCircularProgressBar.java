@@ -62,7 +62,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 0, 0);
 
         try {
-            layoutMode = a.getInt(R.styleable.CustomCircularProgressBar_mode, 1);
+            layoutMode = a.getInt(R.styleable.CustomCircularProgressBar_mode, LayoutMode.DIGITAL.modeNumber);
             mProgressColor = a.getColor(R.styleable.CustomCircularProgressBar_timeProgressColor, getResources().getColor(R.color.colorAccent));
             mRemainingColor = a.getColor(R.styleable.CustomCircularProgressBar_timeRemainingColor, getResources().getColor(R.color.colorPrimaryDark));
             mStrokeWidth = a.getDimension(R.styleable.CustomCircularProgressBar_strokeWidth, 22);
@@ -74,16 +74,6 @@ public class CustomCircularProgressBar extends ConstraintLayout {
 
         setupLayout(context);
 
-    }
-
-    private void setupLayout(Context context) {
-        if (this.layoutMode == LayoutMode.DIGITAL.modeNumber) {
-            inflate(context, R.layout.custom_circle_digital_progress_bar, this);
-            mTimeTextCount = findViewById(R.id.counterText);
-        } else {
-            inflate(context, R.layout.custom_circle_analogic_progress_bar, this);
-            mPointer = findViewById(R.id.pointer);
-        }
     }
 
     public void setProgressTo(final int progressToCount, final Callback callback) {
@@ -112,14 +102,29 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         animator.start();
     }
 
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        initMeasurments();
+        drawProgress(canvas);
+    }
+
+    private void setupLayout(Context context) {
+        if (this.layoutMode == LayoutMode.DIGITAL.modeNumber) {
+            inflate(context, R.layout.custom_circle_digital_progress_bar, this);
+            mTimeTextCount = findViewById(R.id.counterText);
+        } else {
+            inflate(context, R.layout.custom_circle_analogic_progress_bar, this);
+            mPointer = findViewById(R.id.pointer);
+        }
+    }
+
     private void startTimerTextCount(int progressToCount) {
         hours = (int) TimeUnit.MILLISECONDS.toHours(progressToCount);
         minutes = (int) TimeUnit.MILLISECONDS.toMinutes(progressToCount) - (hours * 60);
 
         int auxMinutes = (int) TimeUnit.MILLISECONDS.toSeconds(progressToCount) - (minutes * 60);
         seconds = auxMinutes > INITIAL_REGRESSIVE_COUNT_TIME ? FINAL_REGRESSIVE_COUNT_TIME : auxMinutes;
-
-//        setupTime();
 
         mTimer = new Timer();
         mTimer.scheduleAtFixedRate(new TimerTask() {
@@ -128,13 +133,6 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 refreshTime();
             }
         }, 1000, 1000);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        initMeasurments();
-        drawProgress(canvas);
     }
 
     private void initMeasurments() {
@@ -194,19 +192,6 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             mTimer.purge();
             mTimer.cancel();
         }
-    }
-
-    private void setupTime() {
-        /*if (hours > FINAL_REGRESSIVE_COUNT_TIME && minutes == FINAL_REGRESSIVE_COUNT_TIME && seconds == FINAL_REGRESSIVE_COUNT_TIME) {
-            hours -= 1;
-            minutes = INITIAL_REGRESSIVE_COUNT_TIME;
-            seconds = INITIAL_REGRESSIVE_COUNT_TIME;
-        }
-
-        if (minutes > FINAL_REGRESSIVE_COUNT_TIME && seconds == FINAL_REGRESSIVE_COUNT_TIME) {
-            minutes -= 1;
-            seconds = INITIAL_REGRESSIVE_COUNT_TIME;
-        }*/
     }
 
     public interface Callback {
