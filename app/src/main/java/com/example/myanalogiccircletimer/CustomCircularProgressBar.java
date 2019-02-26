@@ -19,15 +19,13 @@ import java.util.concurrent.TimeUnit;
 public class CustomCircularProgressBar extends ConstraintLayout {
 
 
-    private static final Integer INITIAL_COUNT_TIME = 59;
-    private static final Integer FINAL_COUNT_TIME = 0;
-    private int hours = FINAL_COUNT_TIME;
-    private int minutes = FINAL_COUNT_TIME;
-    private int seconds = FINAL_COUNT_TIME;
+    private static final Integer INITIAL_REGRESSIVE_COUNT_TIME = 59;
+    private static final Integer FINAL_REGRESSIVE_COUNT_TIME = 0;
+    private int hours = FINAL_REGRESSIVE_COUNT_TIME;
+    private int minutes = FINAL_REGRESSIVE_COUNT_TIME;
+    private int seconds = FINAL_REGRESSIVE_COUNT_TIME;
     private Timer mTimer;
 
-
-    private final float mStartAngle = -90;
     private Paint mPaint;
     private float mPad;
     private int mViewWidth;
@@ -119,7 +117,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         minutes = (int) TimeUnit.MILLISECONDS.toMinutes(progressToCount) - (hours * 60);
 
         int auxMinutes = (int) TimeUnit.MILLISECONDS.toSeconds(progressToCount) - (minutes * 60);
-        seconds = auxMinutes > INITIAL_COUNT_TIME ? FINAL_COUNT_TIME : auxMinutes;
+        seconds = auxMinutes > INITIAL_REGRESSIVE_COUNT_TIME ? FINAL_REGRESSIVE_COUNT_TIME : auxMinutes;
 
 //        setupTime();
 
@@ -129,7 +127,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             public void run() {
                 refreshTime();
             }
-        }, 1000, 10);
+        }, 1000, 1000);
     }
 
     @Override
@@ -153,6 +151,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         mPaint.setAntiAlias(true);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
 
+        float mStartAngle = -90;
         if (layoutMode == LayoutMode.DIGITAL.modeNumber) {
             mPaint.setColor(mProgressColor);
             mPaint.setStyle(Paint.Style.STROKE);
@@ -176,13 +175,13 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         boolean isSecondsReseted = false;
         boolean isMinutesReseted = false;
 
-        if (hours > FINAL_COUNT_TIME && minutes == FINAL_COUNT_TIME) {
-            minutes = INITIAL_COUNT_TIME;
+        if (hours > FINAL_REGRESSIVE_COUNT_TIME && minutes == FINAL_REGRESSIVE_COUNT_TIME) {
+            minutes = INITIAL_REGRESSIVE_COUNT_TIME;
             isMinutesReseted = true;
             hours--;
         }
-        if (minutes > FINAL_COUNT_TIME && seconds == FINAL_COUNT_TIME) {
-            seconds = INITIAL_COUNT_TIME;
+        if (minutes > FINAL_REGRESSIVE_COUNT_TIME && seconds == FINAL_REGRESSIVE_COUNT_TIME) {
+            seconds = INITIAL_REGRESSIVE_COUNT_TIME;
             isSecondsReseted = true;
             if (!isMinutesReseted) {
                 minutes--;
@@ -191,22 +190,22 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         if (!isSecondsReseted) {
             seconds--;
         }
-        if (hours == FINAL_COUNT_TIME && minutes == FINAL_COUNT_TIME && seconds == FINAL_COUNT_TIME) {
+        if (hours == FINAL_REGRESSIVE_COUNT_TIME && minutes == FINAL_REGRESSIVE_COUNT_TIME && seconds == FINAL_REGRESSIVE_COUNT_TIME) {
             mTimer.purge();
             mTimer.cancel();
         }
     }
 
     private void setupTime() {
-        /*if (hours > FINAL_COUNT_TIME && minutes == FINAL_COUNT_TIME && seconds == FINAL_COUNT_TIME) {
+        /*if (hours > FINAL_REGRESSIVE_COUNT_TIME && minutes == FINAL_REGRESSIVE_COUNT_TIME && seconds == FINAL_REGRESSIVE_COUNT_TIME) {
             hours -= 1;
-            minutes = INITIAL_COUNT_TIME;
-            seconds = INITIAL_COUNT_TIME;
+            minutes = INITIAL_REGRESSIVE_COUNT_TIME;
+            seconds = INITIAL_REGRESSIVE_COUNT_TIME;
         }
 
-        if (minutes > FINAL_COUNT_TIME && seconds == FINAL_COUNT_TIME) {
+        if (minutes > FINAL_REGRESSIVE_COUNT_TIME && seconds == FINAL_REGRESSIVE_COUNT_TIME) {
             minutes -= 1;
-            seconds = INITIAL_COUNT_TIME;
+            seconds = INITIAL_REGRESSIVE_COUNT_TIME;
         }*/
     }
 
