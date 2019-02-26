@@ -4,6 +4,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.support.constraint.ConstraintLayout;
@@ -62,7 +63,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 0, 0);
 
         try {
-            layoutMode = a.getInt(R.styleable.CustomCircularProgressBar_mode, LayoutMode.DIGITAL.modeNumber);
+            layoutMode = a.getInt(R.styleable.CustomCircularProgressBar_mode, LayoutMode.DIGITAL.index);
             mProgressColor = a.getColor(R.styleable.CustomCircularProgressBar_timeProgressColor, getResources().getColor(R.color.colorAccent));
             mRemainingColor = a.getColor(R.styleable.CustomCircularProgressBar_timeRemainingColor, getResources().getColor(R.color.colorPrimaryDark));
             mStrokeWidth = a.getDimension(R.styleable.CustomCircularProgressBar_strokeWidth, 22);
@@ -85,7 +86,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 mSweepAngle = (float) animation.getAnimatedValue();
-                if (layoutMode == LayoutMode.ANALOGIC.modeNumber) {
+                if (layoutMode == LayoutMode.ANALOGIC.index) {
                     mPointer.setRotation(mSweepAngle);
                 } else {
                     mTimeTextCount.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
@@ -96,7 +97,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 }
             }
         });
-        if (layoutMode == LayoutMode.DIGITAL.modeNumber) {
+        if (layoutMode == LayoutMode.DIGITAL.index) {
             startTimerTextCount(progressToCount);
         }
         animator.start();
@@ -110,7 +111,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     }
 
     private void setupLayout(Context context) {
-        if (this.layoutMode == LayoutMode.DIGITAL.modeNumber) {
+        if (this.layoutMode == LayoutMode.DIGITAL.index) {
             inflate(context, R.layout.custom_circle_digital_progress_bar, this);
             mTimeTextCount = findViewById(R.id.counterText);
         } else {
@@ -150,8 +151,8 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         mPaint.setStrokeCap(Paint.Cap.ROUND);
 
         float mStartAngle = -90;
-        if (layoutMode == LayoutMode.DIGITAL.modeNumber) {
-            mPaint.setColor(mProgressColor);
+        if (layoutMode == LayoutMode.DIGITAL.index) {
+            mPaint.setColor(getColorWithAlpha(mProgressColor));
             mPaint.setStyle(Paint.Style.STROKE);
 
             canvas.drawArc(outerOval, mStartAngle, mSweepAngle, false, mPaint);
@@ -159,13 +160,23 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             mPaint.setStyle(Paint.Style.FILL);
 
             // Painting remaining time
-            mPaint.setColor(mRemainingColor);
+            mPaint.setColor(getColorWithAlpha(mRemainingColor));
             canvas.drawArc(outerOval, mSweepAngle, mMaxSweepAngle, true, mPaint);
 
             // Painting progress time
             mPaint.setColor(mProgressColor);
             canvas.drawArc(outerOval, mStartAngle, mSweepAngle, true, mPaint);
         }
+    }
+
+    private int getColorWithAlpha(int color) {
+        int newColor;
+        int alpha = Math.round(Color.alpha(color) * mSweepAngle / mMaxSweepAngle);
+        int redFactor = Color.red(color);
+        int greenFactor = Color.green(color);
+        int blueFactor = Color.blue(color);
+        newColor = Color.argb(alpha, redFactor, greenFactor, blueFactor);
+        return newColor;
     }
 
     private void refreshTime() {
@@ -201,10 +212,10 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     public enum LayoutMode {
         ANALOGIC(0), DIGITAL(1);
 
-        int modeNumber;
+        int index;
 
-        LayoutMode(int modeNumber) {
-            this.modeNumber = modeNumber;
+        LayoutMode(int index) {
+            this.index = index;
         }
     }
 }

@@ -17,7 +17,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:pad="0.6"
         app:strokeWidth="12dp"
-        app:timeProgressColor="@color/colorAccent" />
+        app:timeProgressColor="@color/white"
+        app:timeRemainingColor="@color/black"/>
 
     <Button
         android:id="@+id/doProgress"
