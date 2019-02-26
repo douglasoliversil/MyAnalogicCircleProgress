@@ -12,7 +12,20 @@ import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+
 public class CustomCircularProgressBar extends ConstraintLayout {
+
+
+    private static final Integer INITIAL_COUNT_TIME = 59;
+    private static final Integer FINAL_COUNT_TIME = 0;
+    private int hours = FINAL_COUNT_TIME;
+    private int minutes = FINAL_COUNT_TIME;
+    private int seconds = FINAL_COUNT_TIME;
+    private Timer mTimer;
+
 
     private final float mStartAngle = -90;
     private Paint mPaint;
@@ -26,7 +39,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     private int mRemainingColor;
     private ImageView mPointer;
     private int layoutMode;
-    private TextView mCounterText;
+    private TextView mTimeTextCount;
 
     public CustomCircularProgressBar(Context context) {
         super(context);
@@ -68,7 +81,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     private void setupLayout(Context context) {
         if (this.layoutMode == LayoutMode.DIGITAL.modeNumber) {
             inflate(context, R.layout.custom_circle_digital_progress_bar, this);
-            mCounterText = findViewById(R.id.counterText);
+            mTimeTextCount = findViewById(R.id.counterText);
         } else {
             inflate(context, R.layout.custom_circle_analogic_progress_bar, this);
             mPointer = findViewById(R.id.pointer);
@@ -86,6 +99,8 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 mSweepAngle = (float) animation.getAnimatedValue();
                 if (layoutMode == LayoutMode.ANALOGIC.modeNumber) {
                     mPointer.setRotation(mSweepAngle);
+                } else {
+                    mTimeTextCount.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
                 }
                 invalidate();
                 if (animation.getAnimatedFraction() == 1.0) {
@@ -93,11 +108,28 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 }
             }
         });
+        if (layoutMode == LayoutMode.DIGITAL.modeNumber) {
+            startTimerTextCount(progressToCount);
+        }
         animator.start();
     }
 
-    public TextView getCounterText() {
-        return mCounterText;
+    private void startTimerTextCount(int progressToCount) {
+        hours = (int) TimeUnit.MILLISECONDS.toHours(progressToCount);
+        minutes = (int) TimeUnit.MILLISECONDS.toMinutes(progressToCount) - (hours * 60);
+
+        int auxMinutes = (int) TimeUnit.MILLISECONDS.toSeconds(progressToCount) - (minutes * 60);
+        seconds = auxMinutes > INITIAL_COUNT_TIME ? FINAL_COUNT_TIME : auxMinutes;
+
+//        setupTime();
+
+        mTimer = new Timer();
+        mTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                refreshTime();
+            }
+        }, 1000, 10);
     }
 
     @Override
@@ -137,6 +169,45 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             mPaint.setColor(mProgressColor);
             canvas.drawArc(outerOval, mStartAngle, mSweepAngle, true, mPaint);
         }
+    }
+
+    private void refreshTime() {
+
+        boolean isSecondsReseted = false;
+        boolean isMinutesReseted = false;
+
+        if (hours > FINAL_COUNT_TIME && minutes == FINAL_COUNT_TIME) {
+            minutes = INITIAL_COUNT_TIME;
+            isMinutesReseted = true;
+            hours--;
+        }
+        if (minutes > FINAL_COUNT_TIME && seconds == FINAL_COUNT_TIME) {
+            seconds = INITIAL_COUNT_TIME;
+            isSecondsReseted = true;
+            if (!isMinutesReseted) {
+                minutes--;
+            }
+        }
+        if (!isSecondsReseted) {
+            seconds--;
+        }
+        if (hours == FINAL_COUNT_TIME && minutes == FINAL_COUNT_TIME && seconds == FINAL_COUNT_TIME) {
+            mTimer.purge();
+            mTimer.cancel();
+        }
+    }
+
+    private void setupTime() {
+        /*if (hours > FINAL_COUNT_TIME && minutes == FINAL_COUNT_TIME && seconds == FINAL_COUNT_TIME) {
+            hours -= 1;
+            minutes = INITIAL_COUNT_TIME;
+            seconds = INITIAL_COUNT_TIME;
+        }
+
+        if (minutes > FINAL_COUNT_TIME && seconds == FINAL_COUNT_TIME) {
+            minutes -= 1;
+            seconds = INITIAL_COUNT_TIME;
+        }*/
     }
 
     public interface Callback {
