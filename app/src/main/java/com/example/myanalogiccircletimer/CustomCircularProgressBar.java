@@ -122,9 +122,8 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         }
         if (layoutMode == LayoutMode.ANALOGIC.index) {
             final ValueAnimator firstColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), mRemainingColor, getResources().getColor(R.color.middleColor));
-            firstColorAnimation.setDuration(progressToCount / 2);
             final ValueAnimator secondColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), getResources().getColor(R.color.middleColor), getResources().getColor(R.color.colorAccent));
-            secondColorAnimation.setDuration(progressToCount / 2);
+            firstColorAnimation.setDuration(progressToCount / 2);
             firstColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
@@ -152,6 +151,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
 
                 }
             });
+            secondColorAnimation.setDuration(progressToCount / 2);
             secondColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
