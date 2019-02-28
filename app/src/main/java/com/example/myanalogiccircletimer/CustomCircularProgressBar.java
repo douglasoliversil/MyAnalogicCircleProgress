@@ -6,7 +6,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.support.constraint.ConstraintLayout;
@@ -24,8 +23,6 @@ public class CustomCircularProgressBar extends ConstraintLayout {
 
     private static final Integer INITIAL_REGRESSIVE_COUNT_TIME = 59;
     private static final Integer FINAL_REGRESSIVE_COUNT_TIME = 0;
-    private static final Integer FINAL_COLOR_SATURATION = 255;
-    private static final Integer INITIAL_COLOR_SATURATION = 0;
     private int hours = FINAL_REGRESSIVE_COUNT_TIME;
     private int minutes = FINAL_REGRESSIVE_COUNT_TIME;
     private int seconds = FINAL_REGRESSIVE_COUNT_TIME;
@@ -43,14 +40,6 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     private ImageView mPointer;
     private int layoutMode;
     private TextView mTimeTextCount;
-
-    private int redFactor;
-    private int greenFactor;
-    private int blueFactor;
-    private boolean isTimerRunning = false;
-    private long mProgressTime = 0;
-    private long mTimeToCount = 30000;
-    private int changeColorReferenceCount = 0;
 
     public CustomCircularProgressBar(Context context) {
         super(context);
@@ -91,15 +80,12 @@ public class CustomCircularProgressBar extends ConstraintLayout {
 
     public void setProgressTo(final int progressToCount, final Callback callback) {
 
-        mTimeToCount = progressToCount;
-
         ValueAnimator timerAnimator = ValueAnimator.ofFloat(mSweepAngle, mMaxSweepAngle);
         timerAnimator.setInterpolator(new LinearInterpolator());
         timerAnimator.setDuration(progressToCount);
         timerAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                mProgressTime = animation.getCurrentPlayTime();
                 mSweepAngle = (float) animation.getAnimatedValue();
                 if (layoutMode == LayoutMode.ANALOGIC.index) {
                     mPointer.setRotation(mSweepAngle);
@@ -118,7 +104,6 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             @Override
             public void onAnimationEnd(Animator animation) {
                 animation.cancel();
-                isTimerRunning = false;
                 callback.countFinished();
             }
 
@@ -236,58 +221,12 @@ public class CustomCircularProgressBar extends ConstraintLayout {
 
             // Painting remaining time
             mPaint.setColor(mRemainingColor);
-//            mPaint.setColor(getNextColor(mRemainingColor));
             canvas.drawArc(outerOval, mSweepAngle, mMaxSweepAngle, true, mPaint);
 
             // Painting progress time
             mPaint.setColor(mProgressColor);
             canvas.drawArc(outerOval, mStartAngle, mSweepAngle, true, mPaint);
         }
-    }
-
-    private int getNextColor(int color) {
-        if (!isTimerRunning) {
-            redFactor = Color.red(color);
-            greenFactor = Color.green(color);
-            blueFactor = Color.blue(color);
-            isTimerRunning = true;
-        }
-        int newColor;
-        int alpha = Math.round(Color.alpha(color)/* * mSweepAngle / mMaxSweepAngle*/);
-        newColor = Color.argb(alpha, redFactor, greenFactor, blueFactor);
-
-        if (isTimerRunning) {
-            //por simples contagem
-            int changeColorReference = (int) (mTimeToCount / mMaxSweepAngle); // quantas vezes precisarei incrementar meu RGB até completar 360 graus
-            if (mProgressTime > 0 && ((mProgressTime / changeColorReference) > changeColorReferenceCount)) { // verificar se do tempo decorrido é o momento de mudar o RGB da cor
-                if (mSweepAngle >= 0f && mSweepAngle <= 120f) {
-                    if (redFactor < FINAL_COLOR_SATURATION)
-                        redFactor++;
-                } else if (mSweepAngle >= 121f && mSweepAngle <= 240f) {
-                    if (redFactor < FINAL_COLOR_SATURATION) {
-                        redFactor++;
-                        if (greenFactor < FINAL_COLOR_SATURATION)
-                            greenFactor++;
-                    }
-                } else {
-                    if (greenFactor > INITIAL_COLOR_SATURATION)
-                        greenFactor--;
-                }
-
-                /*if (redFactor < FINAL_COLOR_SATURATION) {
-                    redFactor++;
-                }
-                if (redFactor >= FINAL_COLOR_SATURATION && greenFactor > INITIAL_COLOR_SATURATION) {
-                    greenFactor--;
-                }
-                if (redFactor >= FINAL_COLOR_SATURATION && greenFactor == INITIAL_COLOR_SATURATION && blueFactor > INITIAL_COLOR_SATURATION) {
-                    blueFactor--;
-                }*/
-                changeColorReferenceCount++;
-            }
-        }
-
-        return newColor;
     }
 
     private void refreshTime() {
