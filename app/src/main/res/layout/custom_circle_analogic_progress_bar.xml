@@ -21,11 +21,22 @@
         android:layout_height="0dp"
         android:indeterminate="false"
         android:max="100"
-        android:progressDrawable="@drawable/ic_timer_riscos"
+        android:progressDrawable="@drawable/progress_shape"
         app:layout_constraintBottom_toBottomOf="@id/externalCircle"
         app:layout_constraintEnd_toEndOf="@id/externalCircle"
         app:layout_constraintStart_toStartOf="@id/externalCircle"
         app:layout_constraintTop_toTopOf="@id/externalCircle" />
+
+    <ImageView
+        android:id="@+id/progressRadar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:rotation="-90"
+        android:src="@drawable/radar_shape"
+        app:layout_constraintBottom_toBottomOf="@id/timerProgressBar"
+        app:layout_constraintEnd_toEndOf="@id/timerProgressBar"
+        app:layout_constraintStart_toStartOf="@id/timerProgressBar"
+        app:layout_constraintTop_toTopOf="@id/timerProgressBar" />
 
     <ImageView
         android:id="@+id/pointer"
