@@ -19,24 +19,36 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@drawable/ic_timer_riscos"
         android:indeterminate="false"
         android:max="100"
         android:progressDrawable="@drawable/progress_shape"
+        android:rotation="-90"
         app:layout_constraintBottom_toBottomOf="@id/externalCircle"
         app:layout_constraintEnd_toEndOf="@id/externalCircle"
         app:layout_constraintStart_toStartOf="@id/externalCircle"
         app:layout_constraintTop_toTopOf="@id/externalCircle" />
 
     <ImageView
-        android:id="@+id/progressRadar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:rotation="-90"
-        android:src="@drawable/radar_shape"
+        android:id="@+id/miolo"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/ic_timer_circulo_miolo"
         app:layout_constraintBottom_toBottomOf="@id/timerProgressBar"
         app:layout_constraintEnd_toEndOf="@id/timerProgressBar"
         app:layout_constraintStart_toStartOf="@id/timerProgressBar"
         app:layout_constraintTop_toTopOf="@id/timerProgressBar" />
+
+    <ImageView
+        android:id="@+id/radar"
+        android:layout_width="242dp"
+        android:layout_height="242dp"
+        android:rotation="-90"
+        android:src="@drawable/radar_shape"
+        app:layout_constraintBottom_toBottomOf="@id/miolo"
+        app:layout_constraintEnd_toEndOf="@id/miolo"
+        app:layout_constraintStart_toStartOf="@id/miolo"
+        app:layout_constraintTop_toTopOf="@id/miolo" />
 
     <ImageView
         android:id="@+id/pointer"
@@ -45,7 +57,9 @@
         android:src="@drawable/ic_timer_ponteiro"
         app:layout_constraintBottom_toBottomOf="@id/timerProgressBar"
         app:layout_constraintEnd_toEndOf="@id/timerProgressBar"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@id/timerProgressBar"
-        app:layout_constraintTop_toTopOf="@id/timerProgressBar" />
+        app:layout_constraintTop_toTopOf="@id/timerProgressBar"
+        app:layout_constraintVertical_bias="1.0" />
 
 </android.support.constraint.ConstraintLayout>

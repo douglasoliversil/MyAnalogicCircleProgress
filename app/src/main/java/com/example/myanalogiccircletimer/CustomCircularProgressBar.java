@@ -2,12 +2,16 @@ package com.example.myanalogiccircletimer;
 
 import android.animation.Animator;
 import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.support.constraint.ConstraintLayout;
 import android.util.AttributeSet;
 import android.view.animation.Animation;
@@ -44,7 +48,6 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     private ImageView mPointer;
     private int layoutMode;
     private TextView mTimeTextCount;
-    private ImageView mProgressRadar;
     private RectF outerOval;
     private Integer countProgress = 0;
 
@@ -89,73 +92,66 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     }
 
     public void setProgressTo(final int progressToCount, final Callback callback) {
-
-        ValueAnimator timerAnimator = ValueAnimator.ofFloat(mSweepAngle, mMaxSweepAngle);
-        timerAnimator.setInterpolator(new LinearInterpolator());
-        timerAnimator.setDuration(progressToCount);
-        timerAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mSweepAngle = (float) animation.getAnimatedValue();
-                if (layoutMode == LayoutMode.ANALOGIC.index) {
-                    mPointer.setRotation(mSweepAngle);
-                    mProgressRadar.setRotation(mSweepAngle - 90);
-                    ((ProgressBar) findViewById(R.id.timerProgressBar)).setProgress(countProgress += 1);
-                } else {
-                    mTimeTextCount.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
-                }
-                invalidate();
-            }
-        });
-        timerAnimator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                animation.cancel();
-                callback.countFinished();
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-        if (layoutMode == LayoutMode.DIGITAL.index) {
-            startTimerTextCount(progressToCount);
-        }
+        //region - Analogic Timer
         if (layoutMode == LayoutMode.ANALOGIC.index) {
+
+            final ProgressBar timeProgressBar = findViewById(R.id.timerProgressBar);
+            final ImageView radar = findViewById(R.id.radar);
+
+            timeProgressBar.bringToFront();
+            timeProgressBar.setMax(progressToCount);
+            timeProgressBar.setInterpolator(new LinearInterpolator());
+            mPointer.bringToFront();
+
+            final ObjectAnimator progressAnimator = ObjectAnimator.ofInt(timeProgressBar, "progress", 0, progressToCount);
             final ValueAnimator firstColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), mRemainingColor, getResources().getColor(R.color.middleColor));
             final ValueAnimator secondColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), getResources().getColor(R.color.middleColor), getResources().getColor(R.color.colorAccent));
             final Animation radarRotationAnimation = AnimationUtils.loadAnimation(getContext(), R.anim.clockwise_animation);
-            radarRotationAnimation.setFillAfter(true);
-            radarRotationAnimation.setAnimationListener(new Animation.AnimationListener() {
+            progressAnimator.setDuration(progressToCount);
+            progressAnimator.setInterpolator(new LinearInterpolator());
+            progressAnimator.addListener(new Animator.AnimatorListener() {
                 @Override
-                public void onAnimationStart(Animation animation) {
+                public void onAnimationStart(Animator animation) {
+                    ValueAnimator timerAnimator = ValueAnimator.ofFloat(mSweepAngle, mMaxSweepAngle);
+                    timerAnimator.setInterpolator(new LinearInterpolator());
+                    timerAnimator.setDuration(progressToCount);
+                    timerAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator animation) {
+                            mPointer.setRotation((float) animation.getAnimatedValue());
+                            radar.setRotation((float) animation.getAnimatedValue() - 90);
+                        }
+                    });
+                    timerAnimator.start();
                 }
 
                 @Override
-                public void onAnimationEnd(Animation animation) {
+                public void onAnimationEnd(Animator animation) {
+                    radar.clearAnimation();
+                    radarRotationAnimation.cancel();
+                    radar.setVisibility(GONE);
                 }
 
                 @Override
-                public void onAnimationRepeat(Animation animation) {
+                public void onAnimationCancel(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
                 }
             });
+
+            radarRotationAnimation.setFillAfter(true);
+            radar.setAnimation(radarRotationAnimation);
 
             firstColorAnimation.setDuration(progressToCount / 2);
             firstColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
                     mRemainingColor = ((int) firstColorAnimation.getAnimatedValue());
+                    findViewById(R.id.miolo).getBackground().mutate().setColorFilter(mRemainingColor, PorterDuff.Mode.SRC_IN);
                 }
             });
             firstColorAnimation.addListener(new Animator.AnimatorListener() {
@@ -184,6 +180,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
                     mRemainingColor = ((int) secondColorAnimation.getAnimatedValue());
+                    findViewById(R.id.miolo).getBackground().mutate().setColorFilter(mRemainingColor, PorterDuff.Mode.SRC_IN);
                 }
             });
             secondColorAnimation.addListener(new Animator.AnimatorListener() {
@@ -194,9 +191,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mProgressRadar.clearAnimation();
                     radarRotationAnimation.cancel();
-                    mProgressRadar.setVisibility(GONE);
                 }
 
                 @Override
@@ -210,9 +205,50 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 }
             });
             firstColorAnimation.start();
-            mProgressRadar.startAnimation(radarRotationAnimation);
+            radarRotationAnimation.start();
+            progressAnimator.start();
         }
-        timerAnimator.start();
+
+        //endregion
+
+        //region - Digital Timer
+        else {
+            ValueAnimator timerAnimator = ValueAnimator.ofFloat(mSweepAngle, mMaxSweepAngle);
+            timerAnimator.setInterpolator(new LinearInterpolator());
+            timerAnimator.setDuration(progressToCount);
+            timerAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    mTimeTextCount.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+                    invalidate();
+                }
+            });
+            timerAnimator.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    animation.cancel();
+                    callback.countFinished();
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+            startTimerTextCount(progressToCount);
+            timerAnimator.start();
+        }
+        //endregion
     }
 
     @Override
@@ -229,10 +265,6 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         } else {
             inflate(context, R.layout.custom_circle_analogic_progress_bar, this);
             mPointer = findViewById(R.id.pointer);
-            mProgressRadar = findViewById(R.id.progressRadar);
-            //TODO - ajustar tamanho do radar dinamicamente
-            mProgressRadar.getLayoutParams().height = 830;
-            mProgressRadar.getLayoutParams().width = 830;
         }
     }
 
@@ -275,11 +307,11 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             mPaint.setStyle(Paint.Style.FILL);
 
             // Painting remaining time
-            mPaint.setColor(mRemainingColor);
-            canvas.drawArc(outerOval, mSweepAngle, mMaxSweepAngle, true, mPaint);
+            /*mPaint.setColor(mRemainingColor);
+            canvas.drawArc(outerOval, mSweepAngle, mMaxSweepAngle, true, mPaint);*/
             // Painting progress time
-            mPaint.setColor(mProgressColor);
-            canvas.drawArc(outerOval, START_ANGLE, mSweepAngle, true, mPaint);
+            /*mPaint.setColor(mProgressColor);
+            canvas.drawArc(outerOval, START_ANGLE, mSweepAngle, true, mPaint);*/
         }
     }
 
