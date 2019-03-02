@@ -50,6 +50,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     private TextView mTimeTextCount;
     private RectF outerOval;
     private Integer countProgress = 0;
+    ProgressBar timeProgressBar;
 
     int diameter = 0;
     float pad = 0f;
@@ -95,7 +96,6 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         //region - Analogic Timer
         if (layoutMode == LayoutMode.ANALOGIC.index) {
 
-            final ProgressBar timeProgressBar = findViewById(R.id.timerProgressBar);
             final ImageView radar = findViewById(R.id.radar);
 
             timeProgressBar.bringToFront();
@@ -220,6 +220,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
                     mTimeTextCount.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+                    timeProgressBar.setProgress(countProgress += 1);
                     invalidate();
                 }
             });
@@ -266,6 +267,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             inflate(context, R.layout.custom_circle_analogic_progress_bar, this);
             mPointer = findViewById(R.id.pointer);
         }
+        timeProgressBar = findViewById(R.id.timerProgressBar);
     }
 
     private void startTimerTextCount(int progressToCount) {
