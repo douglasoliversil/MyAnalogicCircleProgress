@@ -10,8 +10,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.TransitionDrawable;
 import android.support.constraint.ConstraintLayout;
 import android.util.AttributeSet;
 import android.view.animation.Animation;
@@ -48,12 +46,8 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     private ImageView mPointer;
     private int layoutMode;
     private TextView mTimeTextCount;
-    private RectF outerOval;
-    private Integer countProgress = 0;
-    ProgressBar timeProgressBar;
-
-    int diameter = 0;
-    float pad = 0f;
+    private ProgressBar timeProgressBar;
+    private ValueAnimator mTimerAnimator;
 
     public CustomCircularProgressBar(Context context) {
         super(context);
@@ -112,17 +106,17 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             progressAnimator.addListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animation) {
-                    ValueAnimator timerAnimator = ValueAnimator.ofFloat(mSweepAngle, mMaxSweepAngle);
-                    timerAnimator.setInterpolator(new LinearInterpolator());
-                    timerAnimator.setDuration(progressToCount);
-                    timerAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    mTimerAnimator = ValueAnimator.ofFloat(mSweepAngle, mMaxSweepAngle);
+                    mTimerAnimator.setInterpolator(new LinearInterpolator());
+                    mTimerAnimator.setDuration(progressToCount);
+                    mTimerAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                         @Override
                         public void onAnimationUpdate(ValueAnimator animation) {
                             mPointer.setRotation((float) animation.getAnimatedValue());
                             radar.setRotation((float) animation.getAnimatedValue() - 90);
                         }
                     });
-                    timerAnimator.start();
+                    mTimerAnimator.start();
                 }
 
                 @Override
@@ -130,6 +124,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                     radar.clearAnimation();
                     radarRotationAnimation.cancel();
                     radar.setVisibility(GONE);
+                    callback.countFinished();
                 }
 
                 @Override
@@ -213,18 +208,22 @@ public class CustomCircularProgressBar extends ConstraintLayout {
 
         //region - Digital Timer
         else {
-            ValueAnimator timerAnimator = ValueAnimator.ofFloat(mSweepAngle, mMaxSweepAngle);
-            timerAnimator.setInterpolator(new LinearInterpolator());
-            timerAnimator.setDuration(progressToCount);
-            timerAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            mTimerAnimator = ValueAnimator.ofFloat(mSweepAngle, mMaxSweepAngle);
+            mTimerAnimator.setInterpolator(new LinearInterpolator());
+            mTimerAnimator.setDuration(progressToCount);
+            mTimerAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
-                    mTimeTextCount.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
-                    timeProgressBar.setProgress(countProgress += 1);
+                    mSweepAngle = (float) animation.getAnimatedValue();
+                    if (layoutMode == LayoutMode.ANALOGIC.index) {
+                        mPointer.setRotation(mSweepAngle);
+                    } else {
+                        mTimeTextCount.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+                    }
                     invalidate();
                 }
             });
-            timerAnimator.addListener(new Animator.AnimatorListener() {
+            mTimerAnimator.addListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animation) {
 
@@ -232,7 +231,6 @@ public class CustomCircularProgressBar extends ConstraintLayout {
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    animation.cancel();
                     callback.countFinished();
                 }
 
@@ -247,7 +245,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 }
             });
             startTimerTextCount(progressToCount);
-            timerAnimator.start();
+            mTimerAnimator.start();
         }
         //endregion
     }
@@ -289,13 +287,13 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     private void initMeasurments() {
         mViewWidth = getWidth();
         mViewHeight = getHeight();
-        diameter = Math.min(mViewWidth, mViewHeight);
-        pad = mStrokeWidth / mPad;
-        outerOval = new RectF(pad, pad, diameter - pad, diameter - pad);
     }
 
     private void drawProgress(Canvas canvas) {
 
+        final int diameter = Math.min(mViewWidth, mViewHeight);
+        final float pad = mStrokeWidth / mPad;
+        final RectF outerOval = new RectF(pad, pad, diameter - pad, diameter - pad);
         mPaint.setStrokeWidth(mStrokeWidth);
         mPaint.setAntiAlias(true);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
@@ -305,15 +303,6 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             mPaint.setStyle(Paint.Style.STROKE);
 
             canvas.drawArc(outerOval, START_ANGLE, mSweepAngle, false, mPaint);
-        } else {
-            mPaint.setStyle(Paint.Style.FILL);
-
-            // Painting remaining time
-            /*mPaint.setColor(mRemainingColor);
-            canvas.drawArc(outerOval, mSweepAngle, mMaxSweepAngle, true, mPaint);*/
-            // Painting progress time
-            /*mPaint.setColor(mProgressColor);
-            canvas.drawArc(outerOval, START_ANGLE, mSweepAngle, true, mPaint);*/
         }
     }
 
