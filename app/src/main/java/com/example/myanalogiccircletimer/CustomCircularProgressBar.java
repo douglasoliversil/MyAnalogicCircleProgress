@@ -95,11 +95,14 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             mTimeProgressBar.setMax(progressToCount);
             mTimeProgressBar.setInterpolator(new LinearInterpolator());
             mPointer.bringToFront();
+            int colorAnimationDuration = progressToCount / 2;
 
             final ObjectAnimator progressAnimator = ObjectAnimator.ofInt(mTimeProgressBar, "progress", 0, progressToCount);
             final ValueAnimator firstColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), mRemainingColor, getResources().getColor(R.color.middleProgressColor));
             final ValueAnimator secondColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), getResources().getColor(R.color.middleProgressColor), getResources().getColor(R.color.endProgressColor));
             final Animation radarRotationAnimation = AnimationUtils.loadAnimation(getContext(), R.anim.clockwise_animation);
+
+            // region - Progress animator
             progressAnimator.setDuration(progressToCount);
             progressAnimator.setInterpolator(new LinearInterpolator());
             progressAnimator.addListener(new Animator.AnimatorListener() {
@@ -136,12 +139,15 @@ public class CustomCircularProgressBar extends ConstraintLayout {
 
                 }
             });
+            // endregion - Progress animator
 
+            //region - Radar rotation animation
             radarRotationAnimation.setFillAfter(true); // Especifica que deve começar após o start da animation thread
             radarRotationAnimation.setStartOffset(1000); // Especifica o tempo que a rotação deve começar após o tempo do start da animation thread
-            mRadar.setAnimation(radarRotationAnimation);
+            //endregion
 
-            firstColorAnimation.setDuration(progressToCount / 2);
+            // region - First color animation
+            firstColorAnimation.setDuration(colorAnimationDuration);
             firstColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
@@ -170,7 +176,10 @@ public class CustomCircularProgressBar extends ConstraintLayout {
 
                 }
             });
-            secondColorAnimation.setDuration(progressToCount / 2);
+            // endregion
+
+            // region - Second color animation
+            secondColorAnimation.setDuration(colorAnimationDuration);
             secondColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
@@ -199,9 +208,13 @@ public class CustomCircularProgressBar extends ConstraintLayout {
 
                 }
             });
+            // endregion
+
+            //region - Start animations
             firstColorAnimation.start();
-//            radarRotationAnimation.start();
             progressAnimator.start();
+            mRadar.setAnimation(radarRotationAnimation);
+            //endregion
         }
 
         //endregion
