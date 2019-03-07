@@ -41,7 +41,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     private float mSweepAngle = 0;
     private float mMaxSweepAngle = 360;
     private float mStrokeWidth = 22;
-    private int mProgressColor;
+    private int mStrokeColor;
     private int mRemainingColor;
     private ImageView mPointer;
     private int layoutMode;
@@ -66,6 +66,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     private void init(Context context, AttributeSet attrs) {
         setWillNotDraw(false);
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mRemainingColor = getResources().getColor(R.color.colorPrimary);
         TypedArray a = context.getTheme().obtainStyledAttributes(
                 attrs,
                 R.styleable.CustomCircularProgressBar,
@@ -73,8 +74,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
 
         try {
             layoutMode = a.getInt(R.styleable.CustomCircularProgressBar_mode, LayoutMode.DIGITAL.index);
-            mProgressColor = a.getColor(R.styleable.CustomCircularProgressBar_timeProgressColor, getResources().getColor(R.color.colorPrimary));
-            mRemainingColor = a.getColor(R.styleable.CustomCircularProgressBar_timeRemainingColor, getResources().getColor(R.color.colorPrimaryDark));
+            mStrokeColor = a.getColor(R.styleable.CustomCircularProgressBar_strokeColor, getResources().getColor(R.color.colorPrimary));
             mStrokeWidth = a.getDimension(R.styleable.CustomCircularProgressBar_strokeWidth, 22);
             mPad = a.getFloat(R.styleable.CustomCircularProgressBar_pad, 2.0f);
 
@@ -98,8 +98,8 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             mPointer.bringToFront();
 
             final ObjectAnimator progressAnimator = ObjectAnimator.ofInt(timeProgressBar, "progress", 0, progressToCount);
-            final ValueAnimator firstColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), mRemainingColor, getResources().getColor(R.color.middleColor));
-            final ValueAnimator secondColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), getResources().getColor(R.color.middleColor), getResources().getColor(R.color.colorAccent));
+            final ValueAnimator firstColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), mRemainingColor, getResources().getColor(R.color.middleProgressColor));
+            final ValueAnimator secondColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), getResources().getColor(R.color.middleProgressColor), getResources().getColor(R.color.endProgressColor));
             final Animation radarRotationAnimation = AnimationUtils.loadAnimation(getContext(), R.anim.clockwise_animation);
             progressAnimator.setDuration(progressToCount);
             progressAnimator.setInterpolator(new LinearInterpolator());
@@ -253,8 +253,10 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        initMeasurments();
-        drawProgress(canvas);
+        if (layoutMode == LayoutMode.DIGITAL.index) {
+            initMeasurments();
+            drawProgress(canvas);
+        }
     }
 
     private void setupLayout(Context context) {
@@ -290,20 +292,15 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     }
 
     private void drawProgress(Canvas canvas) {
-
         final int diameter = Math.min(mViewWidth, mViewHeight);
         final float pad = mStrokeWidth / mPad;
         final RectF outerOval = new RectF(pad, pad, diameter - pad, diameter - pad);
         mPaint.setStrokeWidth(mStrokeWidth);
         mPaint.setAntiAlias(true);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
-
-        if (layoutMode == LayoutMode.DIGITAL.index) {
-            mPaint.setColor(mProgressColor);
-            mPaint.setStyle(Paint.Style.STROKE);
-
-            canvas.drawArc(outerOval, START_ANGLE, mSweepAngle, false, mPaint);
-        }
+        mPaint.setColor(mStrokeColor);
+        mPaint.setStyle(Paint.Style.STROKE);
+        canvas.drawArc(outerOval, START_ANGLE, mSweepAngle, false, mPaint);
     }
 
     private void refreshTime() {

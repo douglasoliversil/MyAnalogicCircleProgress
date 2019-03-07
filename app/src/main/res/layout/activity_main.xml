@@ -14,9 +14,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:mode="analogic"
-        app:pad="0.6"
-        app:strokeWidth="12dp"/>
+        app:mode="digital" />
 
     <Button
         android:id="@+id/doProgress"
