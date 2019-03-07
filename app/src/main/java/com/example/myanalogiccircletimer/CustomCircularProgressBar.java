@@ -29,9 +29,9 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     private static final float START_ANGLE = -90;
     private static final Integer INITIAL_REGRESSIVE_COUNT_TIME = 59;
     private static final Integer FINAL_REGRESSIVE_COUNT_TIME = 0;
-    private int hours = FINAL_REGRESSIVE_COUNT_TIME;
-    private int minutes = FINAL_REGRESSIVE_COUNT_TIME;
-    private int seconds = FINAL_REGRESSIVE_COUNT_TIME;
+    private int mHours = FINAL_REGRESSIVE_COUNT_TIME;
+    private int mMinutes = FINAL_REGRESSIVE_COUNT_TIME;
+    private int mSeconds = FINAL_REGRESSIVE_COUNT_TIME;
     private Timer mTimer;
 
     private Paint mPaint;
@@ -44,9 +44,9 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     private int mStrokeColor;
     private int mRemainingColor;
     private ImageView mPointer;
-    private int layoutMode;
+    private int mLayoutMode;
     private TextView mTimeTextCount;
-    private ProgressBar timeProgressBar;
+    private ProgressBar mTimeProgressBar;
     private ValueAnimator mTimerAnimator;
     private ImageView mRadar;
 
@@ -74,7 +74,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 0, 0);
 
         try {
-            layoutMode = a.getInt(R.styleable.CustomCircularProgressBar_mode, LayoutMode.DIGITAL.index);
+            mLayoutMode = a.getInt(R.styleable.CustomCircularProgressBar_mode, LayoutMode.DIGITAL.index);
             mStrokeColor = a.getColor(R.styleable.CustomCircularProgressBar_strokeColor, getResources().getColor(R.color.colorPrimary));
             mStrokeWidth = a.getDimension(R.styleable.CustomCircularProgressBar_strokeWidth, 22);
             mPad = a.getFloat(R.styleable.CustomCircularProgressBar_pad, 2.0f);
@@ -83,20 +83,20 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             a.recycle();
         }
 
-        setupLayout(context);
+        inflateLayout(context);
 
     }
 
     public void setProgressTo(final int progressToCount, final Callback callback) {
         //region - Analogic Timer
-        if (layoutMode == LayoutMode.ANALOGIC.index) {
+        if (mLayoutMode == LayoutMode.ANALOGIC.index) {
 
-            timeProgressBar.bringToFront();
-            timeProgressBar.setMax(progressToCount);
-            timeProgressBar.setInterpolator(new LinearInterpolator());
+            mTimeProgressBar.bringToFront();
+            mTimeProgressBar.setMax(progressToCount);
+            mTimeProgressBar.setInterpolator(new LinearInterpolator());
             mPointer.bringToFront();
 
-            final ObjectAnimator progressAnimator = ObjectAnimator.ofInt(timeProgressBar, "progress", 0, progressToCount);
+            final ObjectAnimator progressAnimator = ObjectAnimator.ofInt(mTimeProgressBar, "progress", 0, progressToCount);
             final ValueAnimator firstColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), mRemainingColor, getResources().getColor(R.color.middleProgressColor));
             final ValueAnimator secondColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), getResources().getColor(R.color.middleProgressColor), getResources().getColor(R.color.endProgressColor));
             final Animation radarRotationAnimation = AnimationUtils.loadAnimation(getContext(), R.anim.clockwise_animation);
@@ -215,10 +215,10 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
                     mSweepAngle = (float) animation.getAnimatedValue();
-                    if (layoutMode == LayoutMode.ANALOGIC.index) {
+                    if (mLayoutMode == LayoutMode.ANALOGIC.index) {
                         mPointer.setRotation(mSweepAngle);
                     } else {
-                        mTimeTextCount.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+                        mTimeTextCount.setText(String.format("%02d:%02d:%02d", mHours, mMinutes, mSeconds));
                     }
                     invalidate();
                 }
@@ -253,14 +253,14 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (layoutMode == LayoutMode.DIGITAL.index) {
+        if (mLayoutMode == LayoutMode.DIGITAL.index) {
             initMeasurments();
             drawProgress(canvas);
         }
     }
 
-    private void setupLayout(Context context) {
-        if (this.layoutMode == LayoutMode.DIGITAL.index) {
+    private void inflateLayout(Context context) {
+        if (this.mLayoutMode == LayoutMode.DIGITAL.index) {
             inflate(context, R.layout.custom_circle_digital_progress_bar, this);
             mTimeTextCount = findViewById(R.id.counterText);
         } else {
@@ -268,15 +268,15 @@ public class CustomCircularProgressBar extends ConstraintLayout {
             mPointer = findViewById(R.id.pointer);
             mRadar = findViewById(R.id.radar);
         }
-        timeProgressBar = findViewById(R.id.timerProgressBar);
+        mTimeProgressBar = findViewById(R.id.timerProgressBar);
     }
 
     private void startTimerTextCount(int progressToCount) {
-        hours = (int) TimeUnit.MILLISECONDS.toHours(progressToCount);
-        minutes = (int) TimeUnit.MILLISECONDS.toMinutes(progressToCount) - (hours * 60);
+        mHours = (int) TimeUnit.MILLISECONDS.toHours(progressToCount);
+        mMinutes = (int) TimeUnit.MILLISECONDS.toMinutes(progressToCount) - (mHours * 60);
 
-        int auxMinutes = (int) TimeUnit.MILLISECONDS.toSeconds(progressToCount) - (minutes * 60);
-        seconds = auxMinutes > INITIAL_REGRESSIVE_COUNT_TIME ? FINAL_REGRESSIVE_COUNT_TIME : auxMinutes;
+        int auxMinutes = (int) TimeUnit.MILLISECONDS.toSeconds(progressToCount) - (mMinutes * 60);
+        mSeconds = auxMinutes > INITIAL_REGRESSIVE_COUNT_TIME ? FINAL_REGRESSIVE_COUNT_TIME : auxMinutes;
 
         mTimer = new Timer();
         mTimer.scheduleAtFixedRate(new TimerTask() {
@@ -309,22 +309,22 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         boolean isSecondsReseted = false;
         boolean isMinutesReseted = false;
 
-        if (hours > FINAL_REGRESSIVE_COUNT_TIME && minutes == FINAL_REGRESSIVE_COUNT_TIME) {
-            minutes = INITIAL_REGRESSIVE_COUNT_TIME;
+        if (mHours > FINAL_REGRESSIVE_COUNT_TIME && mMinutes == FINAL_REGRESSIVE_COUNT_TIME) {
+            mMinutes = INITIAL_REGRESSIVE_COUNT_TIME;
             isMinutesReseted = true;
-            hours--;
+            mHours--;
         }
-        if (minutes > FINAL_REGRESSIVE_COUNT_TIME && seconds == FINAL_REGRESSIVE_COUNT_TIME) {
-            seconds = INITIAL_REGRESSIVE_COUNT_TIME;
+        if (mMinutes > FINAL_REGRESSIVE_COUNT_TIME && mSeconds == FINAL_REGRESSIVE_COUNT_TIME) {
+            mSeconds = INITIAL_REGRESSIVE_COUNT_TIME;
             isSecondsReseted = true;
             if (!isMinutesReseted) {
-                minutes--;
+                mMinutes--;
             }
         }
         if (!isSecondsReseted) {
-            seconds--;
+            mSeconds--;
         }
-        if (hours == FINAL_REGRESSIVE_COUNT_TIME && minutes == FINAL_REGRESSIVE_COUNT_TIME && seconds == FINAL_REGRESSIVE_COUNT_TIME) {
+        if (mHours == FINAL_REGRESSIVE_COUNT_TIME && mMinutes == FINAL_REGRESSIVE_COUNT_TIME && mSeconds == FINAL_REGRESSIVE_COUNT_TIME) {
             mTimer.purge();
             mTimer.cancel();
         }
