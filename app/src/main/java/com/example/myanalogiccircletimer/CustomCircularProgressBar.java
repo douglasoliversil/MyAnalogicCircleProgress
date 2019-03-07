@@ -48,6 +48,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
     private TextView mTimeTextCount;
     private ProgressBar timeProgressBar;
     private ValueAnimator mTimerAnimator;
+    private ImageView mRadar;
 
     public CustomCircularProgressBar(Context context) {
         super(context);
@@ -90,8 +91,6 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         //region - Analogic Timer
         if (layoutMode == LayoutMode.ANALOGIC.index) {
 
-            final ImageView radar = findViewById(R.id.radar);
-
             timeProgressBar.bringToFront();
             timeProgressBar.setMax(progressToCount);
             timeProgressBar.setInterpolator(new LinearInterpolator());
@@ -113,7 +112,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                         @Override
                         public void onAnimationUpdate(ValueAnimator animation) {
                             mPointer.setRotation((float) animation.getAnimatedValue());
-                            radar.setRotation((float) animation.getAnimatedValue() - 90);
+                            mRadar.setRotation((float) animation.getAnimatedValue() - 90);
                         }
                     });
                     mTimerAnimator.start();
@@ -121,9 +120,9 @@ public class CustomCircularProgressBar extends ConstraintLayout {
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    radar.clearAnimation();
+                    mRadar.clearAnimation();
                     radarRotationAnimation.cancel();
-                    radar.setVisibility(GONE);
+                    mRadar.setVisibility(GONE);
                     callback.countFinished();
                 }
 
@@ -138,8 +137,9 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 }
             });
 
-            radarRotationAnimation.setFillAfter(true);
-            radar.setAnimation(radarRotationAnimation);
+            radarRotationAnimation.setFillAfter(true); // Especifica que deve começar após o start da animation thread
+            radarRotationAnimation.setStartOffset(1000); // Especifica o tempo que a rotação deve começar após o tempo do start da animation thread
+            mRadar.setAnimation(radarRotationAnimation);
 
             firstColorAnimation.setDuration(progressToCount / 2);
             firstColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -200,7 +200,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
                 }
             });
             firstColorAnimation.start();
-            radarRotationAnimation.start();
+//            radarRotationAnimation.start();
             progressAnimator.start();
         }
 
@@ -266,6 +266,7 @@ public class CustomCircularProgressBar extends ConstraintLayout {
         } else {
             inflate(context, R.layout.custom_circle_analogic_progress_bar, this);
             mPointer = findViewById(R.id.pointer);
+            mRadar = findViewById(R.id.radar);
         }
         timeProgressBar = findViewById(R.id.timerProgressBar);
     }
